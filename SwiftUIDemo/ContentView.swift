@@ -9,48 +9,32 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var checkAmount = ""
-    @State private var numberOfPeople = 2
-    @State private var tipPercentage = 2
-    
-    let tipPercentages = [10, 15, 20, 25, 0]
+    var body: some View {
+        GridStack(rows: 4, columns: 4) { row, col in
+            Image(systemName: "\(row * 4 + col).circle")
+            Text("R\(row) C\(col)")
+        }
+    }
+}
 
-    var totalPerPerson: Double {
-        // 计算每个人的应付金额
-        let orderAmount = Double(checkAmount) ?? 0
-        let peopleCount = Double(numberOfPeople + 2)
-        let tipSelection = Double(tipPercentages[tipPercentage])
-        let tipValue = orderAmount / 100 * tipSelection
-        let grandTotal = orderAmount + tipValue
-        let amountPerPerson = grandTotal / peopleCount
+struct GridStack<Content: View>: View {
+    let rows: Int
+    let columns: Int
+    let content: (Int, Int) -> Content
 
-        return amountPerPerson
+    init(rows: Int, columns: Int, @ViewBuilder content: @escaping (Int, Int) -> Content) {
+        self.rows = rows
+        self.columns = columns
+        self.content = content
     }
 
     var body: some View {
-        NavigationView {
-            Form {
-                Section {
-                    TextField("Amount", text: $checkAmount)
-                         .keyboardType(.decimalPad)
-              
-                    Picker("Number of people", selection: $numberOfPeople) {
-                        ForEach(2 ..< 100) {
-                            Text("\($0) people")
-                        }
+        VStack {
+            ForEach(0 ..< rows) { row in
+                HStack {
+                    ForEach(0 ..< self.columns) { column in
+                        self.content(row, column)
                     }
-                }
-
-                Section(header: Text("How much tip do you want to leave?")) {
-                    Picker("Tip percentage", selection: $tipPercentage) {
-                        ForEach(0 ..< tipPercentages.count) {
-                            Text("\(self.tipPercentages[$0])%")
-                        }
-                    }.pickerStyle(SegmentedPickerStyle())
-                }
-
-                Section {
-                    Text("$\(totalPerPerson, specifier: "%.2f")")
                 }
             }
         }
