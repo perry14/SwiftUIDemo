@@ -7,34 +7,38 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct ContentView: View {
-    var body: some View {
-        GridStack(rows: 4, columns: 4) { row, col in
-            Image(systemName: "\(row * 4 + col).circle")
-            Text("R\(row) C\(col)")
-        }
-    }
-}
-
-struct GridStack<Content: View>: View {
-    let rows: Int
-    let columns: Int
-    let content: (Int, Int) -> Content
-
-    init(rows: Int, columns: Int, @ViewBuilder content: @escaping (Int, Int) -> Content) {
-        self.rows = rows
-        self.columns = columns
-        self.content = content
-    }
+    @State private var centerCoordinate = CLLocationCoordinate2D()
+    @State private var locations = [MKPointAnnotation]()
 
     var body: some View {
-        VStack {
-            ForEach(0 ..< rows) { row in
+        ZStack {
+            MapView(centerCoordinate: $centerCoordinate, annotations: locations)
+                .edgesIgnoringSafeArea(.all)
+            Circle()
+                .fill(Color.blue)
+                .opacity(0.3)
+                .frame(width: 32, height: 32)
+            VStack {
+                Spacer()
                 HStack {
-                    ForEach(0 ..< self.columns) { column in
-                        self.content(row, column)
+                    Spacer()
+                    Button(action: {
+                        // create a new location
+                        let newLocation = MKPointAnnotation()
+                        newLocation.coordinate = self.centerCoordinate
+                        self.locations.append(newLocation)
+                    }) {
+                        Image(systemName: "plus")
                     }
+                    .padding()
+                    .background(Color.black.opacity(0.75))
+                    .foregroundColor(.white)
+                    .font(.title)
+                    .clipShape(Circle())
+                    .padding(.trailing)
                 }
             }
         }
