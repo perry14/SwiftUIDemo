@@ -31,6 +31,12 @@ struct ContentView: View {
                     } else {
                         // 鉴权失败
                     }
+                    .padding()
+                    .background(Color.black.opacity(0.75))
+                    .foregroundColor(.white)
+                    .font(.title)
+                    .clipShape(Circle())
+                    .padding(.trailing)
                 }
             }
         } else {
