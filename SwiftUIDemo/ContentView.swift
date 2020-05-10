@@ -7,31 +7,29 @@
 //
 
 import SwiftUI
-import MapKit
+import LocalAuthentication
 
 struct ContentView: View {
-    @State private var centerCoordinate = CLLocationCoordinate2D()
-    @State private var locations = [MKPointAnnotation]()
 
-    var body: some View {
-        ZStack {
-            MapView(centerCoordinate: $centerCoordinate, annotations: locations)
-                .edgesIgnoringSafeArea(.all)
-            Circle()
-                .fill(Color.blue)
-                .opacity(0.3)
-                .frame(width: 32, height: 32)
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        // create a new location
-                        let newLocation = MKPointAnnotation()
-                        newLocation.coordinate = self.centerCoordinate
-                        self.locations.append(newLocation)
-                    }) {
-                        Image(systemName: "plus")
+    @State private var isUnlocked = false
+
+    func authenticate() {
+        let context = LAContext()
+        var error: NSError?
+
+        // 检查是否可以进行生物特征识别
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            // 如果可以，执行识别
+            let reason = "We need to unlock your data."
+
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
+                // 鉴权完成
+                DispatchQueue.main.async {
+                    if success {
+                        // 鉴权成功
+                        self.isUnlocked = true
+                    } else {
+                        // 鉴权失败
                     }
                     .padding()
                     .background(Color.black.opacity(0.75))
@@ -41,7 +39,20 @@ struct ContentView: View {
                     .padding(.trailing)
                 }
             }
+        } else {
+            // 没有生物指纹识别功能
         }
+    }
+    
+    var body: some View {
+        VStack {
+            if self.isUnlocked {
+                Text("Unlocked")
+            } else {
+                Text("Locked")
+            }
+        }
+        .onAppear(perform: authenticate)
     }
 }
 
